@@ -3,34 +3,20 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"math/rand"
-	"time"
 
-	"github.com/dvl-numeez/nats/config"
 	"github.com/dvl-numeez/nats/models"
 	"github.com/nats-io/nats.go"
 )
 
-func publishMessage(js nats.JetStreamContext) {
-	messages, err := models.GetMessages()
+func publishMessage(js nats.JetStreamContext, subjectName string, data models.MessageInfo) {
+	dataBytes, err := json.Marshal(data)
 	if err != nil {
-		log.Println("JSON error : ",err)
-		return
+		log.Println(err)
 	}
-	for _, message := range messages {
-		r := rand.Intn(1500)
-		time.Sleep(time.Duration(r) * time.Millisecond)
-
-		reviewString, err := json.Marshal(message)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		_, err = js.Publish(config.SubjectNameReviewCreated, reviewString)
-		if err != nil {
-			log.Println(err)
-		} else {
-			log.Printf("Publisher  =>  Message: %s\n", message.Content)
-		}
+	_, err = js.Publish(subjectName, dataBytes)
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Printf("Publisher  =>  Message: %s\n", data.TrackingId)
 	}
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func consumeMessages(js nats.JetStreamContext) {
-	_, err := js.Subscribe(config.SubjectNameReviewCreated, func(m *nats.Msg) {
+func consumeMessages(js nats.JetStreamContext,subjectName string) {
+	_, err := js.Subscribe(config.StreamName+"."+subjectName, func(m *nats.Msg) {
 		err := m.Ack()
 
 		if err != nil {
@@ -19,7 +19,7 @@ func consumeMessages(js nats.JetStreamContext) {
 			return
 		}
 
-		var message models.Message
+		var message models.MessageInfo
 		err = json.Unmarshal(m.Data, &message)
 		if err != nil {
 			log.Fatal(err)
