@@ -10,7 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func consumeMessages(js nats.JetStreamContext,subjectName string) {
+func consumeMessages(js nats.JetStreamContext, subjectName string) {
 	_, err := js.Subscribe(config.StreamName+"."+subjectName, func(m *nats.Msg) {
 		err := m.Ack()
 
@@ -26,7 +26,7 @@ func consumeMessages(js nats.JetStreamContext,subjectName string) {
 		}
 
 		fmt.Println(message)
-	})
+	}, nats.DeliverNew())
 
 	if err != nil {
 		log.Println("Subscribe failed")
