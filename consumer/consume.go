@@ -12,21 +12,22 @@ import (
 
 func consumeMessages(js nats.JetStreamContext, subjectName string) {
 	_, err := js.Subscribe(config.StreamName+"."+subjectName, func(m *nats.Msg) {
-		err := m.Ack()
-
-		if err != nil {
-			log.Println("Unable to Ack", err)
-			return
-		}
-
 		var message models.MessageInfo
-		err = json.Unmarshal(m.Data, &message)
+		err := json.Unmarshal(m.Data, &message)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fmt.Println(message)
-	}, nats.DeliverNew())
+		err = m.Ack()
+		if err != nil {
+			log.Println("Unable to Ack", err)
+			return
+		}
+	},
+		nats.ManualAck(),
+		nats.DeliverNew(),
+		nats.Durable(subjectName))
 
 	if err != nil {
 		log.Println("Subscribe failed")
